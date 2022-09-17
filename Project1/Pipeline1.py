@@ -1,32 +1,47 @@
-from nltk import word_tokenize
+import sys
 import os
+import re
 
-pipeline_input_file = "pipeline1.txt"
-pipeline_output_file = 'pipeline2.txt'
+path = '../reuters21578'
+articles_num = 5
+documents = []
 output_dir = "Output/"
+pipeline_output_file = 'pipeline1.txt'
+
+
+# read the Reuter's collection and extract the raw text of each article from the corpus
+def read_from_file():
+    for file in os.listdir(path):
+        # find all files ending with .sgm in the folder
+        if file.endswith('.sgm'):
+            # use latin-1 to decode some characters excluded in utf-8 or gbk
+            with open(os.path.join(path, file), 'r', encoding='latin-1') as f:
+                reuters_file_content = f.read()
+                yield reuters_file_content
 
 
 if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        articles_num = 5
+    else:
+        articles_num = int(sys.argv[1])
+    print('the number of extracted files is ' + str(articles_num))
+
+    files = read_from_file()
+    # iterate all .sgm files
     counts = 0
-    actual_output_dir = output_dir + str(counts) + '/'
-    while os.path.exists(actual_output_dir):
-        for line in open(actual_output_dir + pipeline_input_file):
-            text = line.replace('\n', '')
-            tokens = word_tokenize(text)
-        special_symbols = '''!()-[]{};:'",<>./``''?@#$%^&*_~'''
-        token_list = []
-        # clean all special symbols in the tokens
-        for token in tokens:
-            have_digital = False
-            for character in token:
-                if character in '''0123456789''':
-                    have_digital = True
-                    break
-            if token not in special_symbols and token != '--' and not have_digital:
-                token_list.append(token)
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        with open(actual_output_dir + pipeline_output_file, "w") as f:
-            f.write(str(token_list))
-        actual_output_dir = output_dir + str(counts) + '/'
-        counts += 1
+    for file in files:
+        # get single document
+        for document in re.findall("<REUTERS TOPICS.*?</REUTERS>", file.replace('\n', ' ')):
+            title = re.search("<TITLE>.*?</TITLE>", document).group()[7: -8]
+            body = re.search("<BODY>.*?</BODY>", document).group()[6: -7]
+            if body is not None:
+                content = title + ' ' + body
+                actual_output_dir = output_dir + str(counts) + '/'
+                if not os.path.exists(actual_output_dir):
+                    os.makedirs(actual_output_dir)
+                with open(actual_output_dir + pipeline_output_file, "w") as f:
+                    f.write(content)
+                counts += 1
+            if counts == articles_num:
+                sys.exit()
