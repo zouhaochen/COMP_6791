@@ -9,6 +9,7 @@ output_dir = "Output/"
 pipeline_output_file = 'pipeline1.txt'
 
 
+# read the Reuter's collection and extract the raw text of each article from the corpus
 def read_from_file():
     for file in os.listdir(path):
         # find all files ending with .sgm in the folder
