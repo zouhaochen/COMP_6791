@@ -5,13 +5,18 @@ import re
 # use NLTK for this project.
 import nltk
 from nltk import word_tokenize
+from nltk import PorterStemmer
 
 # download the Reuter's-21578 corpus onto computer.
 # use that version of the corpus, not the one available in NLTK.
 corpus_path = '../reuters21578'
+
 result_output_directory = 'Result/'
+
 step_one_output_file = 'step1.txt'
 step_two_output_file = 'step2.txt'
+step_three_output_file = 'step3.txt'
+step_four_output_file = 'step4.txt'
 
 documents = []
 
@@ -51,7 +56,7 @@ def step_one_execute():
                 return
 
 
-# execution of pipeline step two
+# tokenize and execution of pipeline step two
 def step_two_execute():
     count = 0
     document_output_directory = result_output_directory + str(count + 1) + '/'
@@ -82,6 +87,46 @@ def step_two_execute():
         count += 1
 
 
+# make all text lowercase and execution of pipeline step three
+def step_three_execute():
+    count = 0
+    document_output_directory = result_output_directory + str(count + 1) + '/'
+
+    while os.path.exists(document_output_directory):
+        for line in open(document_output_directory + step_two_output_file):
+            token_list = eval(line)
+
+        small_case_list = []
+
+        for token in token_list:
+            small_case_list.append(str.lower(token))
+
+        with open(document_output_directory + step_three_output_file, "w") as f:
+            f.write(str(small_case_list))
+        document_output_directory = result_output_directory + str(count + 1) + '/'
+        count += 1
+
+
+# apply Porter stemmer and execution of pipeline step four
+def step_four_execute():
+    count = 0
+    document_output_directory = result_output_directory + str(count + 1) + '/'
+
+    while os.path.exists(document_output_directory):
+        for line in open(document_output_directory + step_three_output_file):
+            token_list = eval(line)
+
+        porter_stemmer_list = []
+
+        for token in token_list:
+            porter_stemmer_list.append(PorterStemmer().stem(token))
+
+        with open(document_output_directory + step_four_output_file, "w") as f:
+            f.write(str(porter_stemmer_list))
+        document_output_directory = result_output_directory + str(count + 1) + '/'
+        count += 1
+
+
 if __name__ == '__main__':
 
     print("pipeline step one start.")
@@ -91,3 +136,11 @@ if __name__ == '__main__':
     print("pipeline step two start.")
     step_two_execute()
     print("pipeline step two finish.")
+
+    print("pipeline step three start.")
+    step_three_execute()
+    print("pipeline step three finish.")
+
+    print("pipeline step four start.")
+    step_four_execute()
+    print("pipeline step four finish.")
