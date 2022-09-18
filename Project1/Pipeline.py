@@ -17,6 +17,7 @@ step_one_output_file = 'step1.txt'
 step_two_output_file = 'step2.txt'
 step_three_output_file = 'step3.txt'
 step_four_output_file = 'step4.txt'
+step_five_output_file = 'step5.txt'
 
 documents = []
 
@@ -127,6 +128,32 @@ def step_four_execute():
         count += 1
 
 
+# given a list of stop words, remove stop words from text.
+# the code has to accept the stop word list as a parameter, do not hard code a particular list
+# execution of pipeline step five
+def step_five_execute():
+    count = 0
+    document_output_directory = result_output_directory + str(count + 1) + '/'
+
+    print("please enter the stop word list and separate with space: ")
+    stop_word_list = input().split(' ')
+
+    while os.path.exists(document_output_directory):
+        for line in open(document_output_directory + step_four_output_file):
+            token_list = eval(line.replace('\n', ''))
+
+        blank_stop_word_list = []
+
+        for token in token_list:
+            if token not in stop_word_list:
+                blank_stop_word_list.append(token)
+
+        with open(document_output_directory + step_five_output_file, "w") as f:
+            f.write(str(blank_stop_word_list))
+        document_output_directory = result_output_directory + str(count + 1) + '/'
+        count += 1
+
+
 if __name__ == '__main__':
 
     print("pipeline step one start.")
@@ -144,3 +171,9 @@ if __name__ == '__main__':
     print("pipeline step four start.")
     step_four_execute()
     print("pipeline step four finish.")
+
+    print("pipeline step five start.")
+    step_five_execute()
+    print("pipeline step five finish.")
+
+    print("pipeline finish.")
