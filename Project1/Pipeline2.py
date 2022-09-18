@@ -3,7 +3,7 @@ import os
 
 pipeline_input_file = "pipeline1.txt"
 pipeline_output_file = 'pipeline2.txt'
-output_dir = "Output/"
+output_dir = "Result/"
 
 
 if __name__ == '__main__':
