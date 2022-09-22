@@ -19,8 +19,6 @@ step_three_output_file = 'step3.txt'
 step_four_output_file = 'step4.txt'
 step_five_output_file = 'step5.txt'
 
-documents = []
-
 
 # pipeline step one: read the Reuter's collection and extract the raw text of each article from the corpus
 def read_and_extract():
