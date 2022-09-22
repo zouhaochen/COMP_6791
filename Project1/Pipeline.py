@@ -1,9 +1,9 @@
 import os
-import re
 import sys
 
 # use NLTK for this project.
 import nltk
+
 from nltk import word_tokenize
 from nltk import PorterStemmer
 
@@ -40,9 +40,9 @@ def step_one_execute():
     count = 0
 
     for file in files:
-        for document in re.findall("<REUTERS TOPICS.*?</REUTERS>", file.replace('\n', ' ')):
-            title = re.search("<TITLE>.*?</TITLE>", document).group()[7: -8]
-            body = re.search("<BODY>.*?</BODY>", document).group()[6: -7]
+        for document in nltk.regexp_tokenize(file.replace('\n', ' '), "<REUTERS TOPICS.*?</REUTERS>"):
+            title = nltk.regexp_tokenize(document, "<TITLE>.*?</TITLE>").group()[7: -8]
+            body = nltk.regexp_tokenize(document, "<BODY>.*?</BODY>").group()[6: -7]
             if body is not None:
                 content = title + ' ' + body
                 document_output_directory = result_output_directory + str(count + 1) + '/'
@@ -153,7 +153,6 @@ def step_five_execute():
 
 
 if __name__ == '__main__':
-
     print("pipeline step one start.")
     step_one_execute()
     print("pipeline step one finish.")
