@@ -41,18 +41,32 @@ def step_one_execute():
 
     for file in files:
         for document in nltk.regexp_tokenize(file.replace('\n', ' '), "<REUTERS TOPICS.*?</REUTERS>"):
-            title = nltk.regexp_tokenize(document, "<TITLE>.*?</TITLE>").group()[7: -8]
-            body = nltk.regexp_tokenize(document, "<BODY>.*?</BODY>").group()[6: -7]
-            if body is not None:
-                content = title + ' ' + body
-                document_output_directory = result_output_directory + str(count + 1) + '/'
-                if not os.path.exists(document_output_directory):
-                    os.makedirs(document_output_directory)
-                with open(document_output_directory + step_one_output_file, "w") as f:
-                    f.write(content)
-                count += 1
+            body = nltk.regexp_tokenize(document, "<BODY>.*?</BODY>")
+            title = nltk.regexp_tokenize(document, "<TITLE>.*?</TITLE>")
+            for content in body:
+                if content is not None:
+                    article = str(title[7: -8]) + ' ' + str(content[6: -7])
+                    document_output_directory = result_output_directory + str(count + 1) + '/'
+                    if not os.path.exists(document_output_directory):
+                        os.makedirs(document_output_directory)
+                    with open(document_output_directory + step_one_output_file, "w") as f:
+                        f.write(article)
+                    count += 1
             if count == document_number:
                 return
+#            title = nltk.regexp_tokenize(document, "<TITLE>.*?</TITLE>").group()[7: -8]
+#            body = nltk.regexp_tokenize(document, "<BODY>.*?</BODY>").group()[6: -7]
+#            if body is not None:
+#                content = title + ' ' + body
+#                document_output_directory = result_output_directory + str(count + 1) + '/'
+#                if not os.path.exists(document_output_directory):
+#                    os.makedirs(document_output_directory)
+#                with open(document_output_directory + step_one_output_file, "w") as f:
+#                    f.write(content)
+#                count += 1
+#            if count == document_number:
+#                return
+
 
 
 # tokenize and execution of pipeline step two
