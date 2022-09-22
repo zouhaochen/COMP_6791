@@ -54,19 +54,6 @@ def step_one_execute():
                     count += 1
             if count == document_number:
                 return
-#            title = nltk.regexp_tokenize(document, "<TITLE>.*?</TITLE>").group()[7: -8]
-#            body = nltk.regexp_tokenize(document, "<BODY>.*?</BODY>").group()[6: -7]
-#            if body is not None:
-#                content = title + ' ' + body
-#                document_output_directory = result_output_directory + str(count + 1) + '/'
-#                if not os.path.exists(document_output_directory):
-#                    os.makedirs(document_output_directory)
-#                with open(document_output_directory + step_one_output_file, "w") as f:
-#                    f.write(content)
-#                count += 1
-#            if count == document_number:
-#                return
-
 
 
 # tokenize and execution of pipeline step two
