@@ -3,7 +3,7 @@ import os
 import re
 import time
 
-pipeline_output_file = "1"
+pipeline_output_file = "postings-list.txt"
 path = '../reuters21578'
 punctuations = '''=\'+!()[]{};:",<>./`?@#$%^&*_~'''
 dictionary = {}
@@ -103,6 +103,8 @@ if __name__ == '__main__':
 
     end = time.time()
     print("the total time of 10000 term-docID pairs of naive indexer is " + str("%.2f" % ((end - start) * 1000)) + " ms")
+
+    store_in_disk()
 
 
 
