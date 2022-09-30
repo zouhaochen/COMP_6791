@@ -1,20 +1,31 @@
-from nltk import word_tokenize
 import os
 import re
 import time
+import nltk
 
-pipeline_output_file = "postings-list.txt"
-path = '../reuters21578'
+from nltk import word_tokenize
+
+# download the Reuter's-21578 corpus onto computer.
+# use that version of the corpus, not the one available in NLTK.
+corpus_path = '../reuters21578'
+
+# result directory
+result_output_directory = 'Result/'
+
+# result files
+sub_problem_one_output_file = "postings-list.txt"
+
+# the dictionary of punctuations
 punctuations = '''=\'+!()[]{};:",<>./`?@#$%^&*_~'''
+
 dictionary = {}
 
 
+# read content from document files end with .sgm in the corpus
 def read_from_file():
-    for file in os.listdir(path):
-        # find all files ending with .sgm in the folder
+    for file in os.listdir(corpus_path):
         if file.endswith('.sgm'):
-            # use latin-1 to decode some characters excluded in utf-8 or gbk
-            with open(os.path.join(path, file), 'r', encoding='latin-1') as f:
+            with open(os.path.join(corpus_path, file), 'r', encoding='latin-1') as f:
                 reuters_file_content = f.read()
                 yield reuters_file_content
 
@@ -37,7 +48,7 @@ def construct_posting_list():
 
 
 def store_in_disk():
-    with open(pipeline_output_file, "w") as f:
+    with open(result_output_directory + sub_problem_one_output_file, "w") as f:
         f.write(str(dictionary))
 
 
