@@ -3,7 +3,7 @@ import os
 import re
 import time
 
-pipeline_output_file = "posting-list.txt"
+pipeline_output_file = "1"
 path = '../reuters21578'
 punctuations = '''=\'+!()[]{};:",<>./`?@#$%^&*_~'''
 dictionary = {}
