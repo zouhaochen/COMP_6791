@@ -18,6 +18,7 @@ sub_problem_one_output_file = "postings-list.txt"
 # the dictionary of punctuations
 punctuations = '''=\'+!()[]{};:",<>./`?@#$%^&*_~'''
 
+# dictionary key value pairs of terms in corpus
 dictionary = {}
 
 
@@ -26,25 +27,27 @@ def read_from_file():
     for file in os.listdir(corpus_path):
         if file.endswith('.sgm'):
             with open(os.path.join(corpus_path, file), 'r', encoding='latin-1') as f:
-                reuters_file_content = f.read()
-                yield reuters_file_content
+                document_file_content = f.read()
+                yield document_file_content
 
 
+# remove duplicate in the list F
 def remove_duplicate(F):
-    new_list = []
+    list_after_remove_duplicate = []
     for index in range(len(F) - 1):
         if F[index][0] != F[index + 1][0] or F[index][1] != F[index + 1][1]:
-            new_list.append([F[index][0], F[index][1]])
-    new_list.append([F[index][0], F[index][1]])
-    return new_list
+            list_after_remove_duplicate.append([F[index][0], F[index][1]])
+    list_after_remove_duplicate.append([F[index][0], F[index][1]])
+    return list_after_remove_duplicate
 
 
+# turning the docIDs paired with the same term into a postings list
 def construct_posting_list():
-    for pair in F:
-        posting_list = dictionary.get(pair[0])
+    for doc_ID_pair in F:
+        posting_list = dictionary.get(doc_ID_pair[0])
         if posting_list is None:
-            dictionary[pair[0]] = []
-        dictionary.get(pair[0]).append(pair[1])
+            dictionary[doc_ID_pair[0]] = []
+        dictionary.get(doc_ID_pair[0]).append(doc_ID_pair[1])
 
 
 def store_in_disk():
