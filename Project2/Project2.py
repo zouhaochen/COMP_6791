@@ -3,8 +3,9 @@ import time
 import nltk
 
 from nltk import word_tokenize
-from nltk import re
 from nltk import PorterStemmer
+from nltk import re
+
 from nltk.corpus import stopwords
 
 from tabulate import tabulate
