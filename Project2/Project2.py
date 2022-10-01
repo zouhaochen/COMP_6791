@@ -13,12 +13,12 @@ corpus_path = '../reuters21578'
 result_output_directory = 'Result/'
 
 # result files
-sub_problem_one_output_file = "postings-list.txt"
+sub_project_one_output_file = "sub-project-1.txt"
 
-# the dictionary of punctuations
+# the list of punctuations in the content
 punctuations = '''=\'+!()[]{};:",<>./`?@#$%^&*_~'''
 
-# dictionary key value pairs of terms in corpus
+# dictionary key value pairs of terms-document ID in corpus
 dictionary = {}
 
 
@@ -42,7 +42,7 @@ def remove_duplicate(F):
 
 
 # turning the docIDs paired with the same term into a postings list
-def construct_posting_list():
+def build_posting_list():
     for doc_ID_pair in F:
         posting_list = dictionary.get(doc_ID_pair[0])
         if posting_list is None:
@@ -50,37 +50,44 @@ def construct_posting_list():
         dictionary.get(doc_ID_pair[0]).append(doc_ID_pair[1])
 
 
+# store the dictionary with term-document ID pairs in the list
 def store_in_disk():
-    with open(result_output_directory + sub_problem_one_output_file, "w") as f:
+    with open(result_output_directory + sub_project_one_output_file, "w") as f:
         f.write(str(dictionary))
 
 
-if __name__ == '__main__':
-    start = time.time()
-    F = []
+def sub_project_one_module(F):
     files = read_from_file()
-    # iterate all .sgm files
-    counts = 0
-    pairs_num = 10000
+
+    # recursively store term-document IDs pairs from the documents
     for file in files:
-        # if pairs_num < 0:
-        #     break
-        # get single document
         for document in re.findall("<REUTERS TOPICS.*?</REUTERS>", file.replace('\n', ' ')):
+
+            # remove messy code
             document = document.replace("&lt", "")
             document = document.replace("&#3;", "")
-            title_group = re.search("<TITLE>.*?</TITLE>", document)
-            if title_group is None:
+
+            # recognize document file title in tokens list
+            file_title_set = re.search("<TITLE>.*?</TITLE>", document)
+            if file_title_set is None:
                 continue
-            title = title_group.group()[7: -8]
-            body_group = re.search("<BODY>.*?</BODY>", document)
-            if body_group is not None:
-                body = body_group.group()[6: -7]
+            title = file_title_set.group()[7: -8]
+
+            # recognize document file body in tokens list
+            file_body_set = re.search("<BODY>.*?</BODY>", document)
+            if file_body_set is not None:
+                body = file_body_set.group()[6: -7]
             else:
                 body = None
-            docID = re.search('''NEWID="[0-9]+"''', document).group()[7:-1]
-            if docID is None:
+
+            # generate document ID
+            document_id = re.search('''NEWID="[0-9]+"''', document).group()[7:-1]
+            if document_id is None:
                 continue
+
+            # while there are documents to be processed
+            # accepts a document as a list of tokens
+            # outputs term-documentID pairs to a list F
             if title is not None and body is not None:
                 tokens = word_tokenize(title + " " + body)
             else:
@@ -95,8 +102,7 @@ if __name__ == '__main__':
                     if character == '-':
                         tmp = token.split('-')
                         for single in tmp:
-                            F.append([single, docID])
-                            pairs_num -= 1
+                            F.append([single, document_id])
                         flag = False
                         break
                     if character in punctuations:
@@ -104,21 +110,42 @@ if __name__ == '__main__':
                         token_list.pop(token.index(character))
                         token = "".join(token_list)
                 if flag:
-                    F.append([token, docID])
-                    pairs_num -= 1
+                    F.append([token, document_id])
 
+
+if __name__ == '__main__':
+
+    # sub project one: naive indexer
+    print("sub project one begin")
+
+    # begin time cumulative reduction
+    begin_time = time.time()
+
+    # list F for storing the outputs of term-documentID pairs
+    F = []
+
+    # naive indexer step one
+    sub_project_one_module(F)
+    print("finish sub project 1 step 1: accepts a document as a list of tokens and outputs term-documentID pairs to list F")
+
+    # naive indexer step two
     F = sorted(F, key=(lambda x: [x[0]]))
-    print("sort completed!")
-
     F = remove_duplicate(F)
-    print("removal completed!")
+    print("finish sub project 1 step 2: sort F and remove duplicates")
 
-    construct_posting_list()
+    # naive indexer step three
+    build_posting_list()
+    print("finish sub project 1 step 3: turn the sorted F into an index")
 
     end = time.time()
-    print("the total time of 10000 term-docID pairs of naive indexer is " + str("%.2f" % ((end - start) * 1000)) + " ms")
+    print("the overall running time is " + str("%.2f" % ((end - begin_time) * 1000)) + " ms")
 
+    # sub project one result storage
     store_in_disk()
+    print("sub project one finish")
+    print()
+
+
 
 
 
