@@ -1,9 +1,9 @@
 import os
-import re
 import time
 import nltk
 
 from nltk import word_tokenize
+from nltk import re
 
 # download the Reuter's-21578 corpus onto computer.
 # use that version of the corpus, not the one available in NLTK.
@@ -56,7 +56,7 @@ def store_in_disk():
         f.write(str(dictionary))
 
 
-def sub_project_one_module(F):
+def naive_indexer(F):
     files = read_from_file()
 
     # recursively store term-document IDs pairs from the documents
@@ -65,7 +65,12 @@ def sub_project_one_module(F):
 
             # remove messy code
             document = document.replace("&lt", "")
+            document = document.replace("&#1;", "")
+            document = document.replace("&#2;", "")
             document = document.replace("&#3;", "")
+            document = document.replace("&#5;", "")
+            document = document.replace("&#22;", "")
+            document = document.replace("&#31;", "")
 
             # recognize document file title in tokens list
             file_title_set = re.search("<TITLE>.*?</TITLE>", document)
@@ -113,10 +118,30 @@ def sub_project_one_module(F):
                     F.append([token, document_id])
 
 
+def single_term_query_processing():
+    with open(result_output_directory + sub_project_one_output_file, "r") as f:
+        term_dictionary = eval(f.read())
+        while True:
+            print("please enter the single term query: ")
+            term = input()
+            posting_list = term_dictionary.get(term)
+            if posting_list is None:
+                print("no this term")
+                continue
+            print("posting list length: " + str(len(posting_list)))
+            print(posting_list)
+            print("do you want to continue? y/n")
+            choice = input()
+            if choice == "y":
+                continue
+            if choice == "n":
+                break
+
+
 if __name__ == '__main__':
 
     # sub project one: naive indexer
-    print("sub project one begin")
+    print("sub project 1 begin")
 
     # begin time cumulative reduction
     begin_time = time.time()
@@ -125,7 +150,7 @@ if __name__ == '__main__':
     F = []
 
     # naive indexer step one
-    sub_project_one_module(F)
+    naive_indexer(F)
     print("finish sub project 1 step 1: accepts a document as a list of tokens and outputs term-documentID pairs to list F")
 
     # naive indexer step two
@@ -142,8 +167,17 @@ if __name__ == '__main__':
 
     # sub project one result storage
     store_in_disk()
-    print("sub project one finish")
+    print("sub project 1 finish")
     print()
+
+    print("sub project 2 begin")
+    single_term_query_processing()
+    print("sub project 2 finish")
+    print()
+
+
+
+
 
 
 
