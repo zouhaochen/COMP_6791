@@ -4,12 +4,10 @@ import nltk
 
 from nltk import word_tokenize
 from nltk import PorterStemmer
-from nltk import re
 
 from nltk.corpus import stopwords
 
 from tabulate import tabulate
-
 
 # download the Reuter's-21578 corpus onto computer.
 # use that version of the corpus, not the one available in NLTK.
@@ -70,7 +68,7 @@ def naive_indexer(F):
 
     # recursively store term-document IDs pairs from the documents
     for file in files:
-        for document in re.findall("<REUTERS TOPICS.*?</REUTERS>", file.replace('\n', ' ')):
+        for document in nltk.regexp_tokenize(file.replace('\n', ' '), "<REUTERS TOPICS.*?</REUTERS>"):
 
             # remove messy code
             document = document.replace("&lt", "")
@@ -82,20 +80,23 @@ def naive_indexer(F):
             document = document.replace("&#31;", "")
 
             # recognize document file title in tokens list
-            file_title_set = re.search("<TITLE>.*?</TITLE>", document)
-            if file_title_set is None:
+            file_title_set = nltk.regexp_tokenize(document, "<TITLE>.*?</TITLE>")
+            # file_title_set = re.search("<TITLE>.*?</TITLE>", document)
+            if len(file_title_set) == 0:
                 continue
-            title = file_title_set.group()[7: -8]
+            title = file_title_set[0]
 
             # recognize document file body in tokens list
-            file_body_set = re.search("<BODY>.*?</BODY>", document)
-            if file_body_set is not None:
-                body = file_body_set.group()[6: -7]
+            file_body_set = nltk.regexp_tokenize(document, "<BODY>.*?</BODY>")
+            # file_body_set = re.search("<BODY>.*?</BODY>", document)
+            if len(file_body_set) != 0:
+                body = file_body_set[0]
             else:
                 body = None
 
             # generate document ID
-            document_id = re.search('''NEWID="[0-9]+"''', document).group()[7:-1]
+            document_id = nltk.regexp_tokenize(document, '''NEWID="[0-9]+"''')[0][7:-1]
+            # document_id = re.search('''NEWID="[0-9]+"''', document).group()[7:-1]
             if document_id is None:
                 continue
 
@@ -159,22 +160,14 @@ def no_numbers(information, term_dictionary):
     for key in term_dictionary.keys():
         number += len(term_dictionary.get(key))
     information.get('number (non positional postings)').append(number)
-
-    keys_to_be_removed = []
-
-    for key in term_dictionary.keys():
-        if re.search("[0-9]", key) is not None:
-            keys_to_be_removed.append(key)
-
-    for key in keys_to_be_removed:
-        term_dictionary.pop(key)
-
-    global update_number
+    new_term_dictionary = {k: v for k, v in term_dictionary.items() if not k.isnumeric()}
 
     term_list = information.get('number (distinct terms)')
-    term_list.append(len(term_dictionary))
+    term_list.append(len(new_term_dictionary))
     information.get('Δ %').append('{:0.2f}'.format(-100 * (term_list[0] - term_list[1]) / term_list[0]))
     information.get('T %').append('{:0.2f}'.format(-100 * (term_list[0] - term_list[1]) / term_list[0]))
+
+    return new_term_dictionary
 
 
 # table of statistic about non positional postings
@@ -199,7 +192,8 @@ def non_positional_postings_with_index(information, term_dictionary, index):
 
     term_list = information.get('number (non positional postings)')
     term_list.append(number)
-    information.get('Δ % ').append('{:0.2f}'.format(-100 * (term_list[index] - term_list[index + 1]) / term_list[index]))
+    information.get('Δ % ').append(
+        '{:0.2f}'.format(-100 * (term_list[index] - term_list[index + 1]) / term_list[index]))
     information.get('T % ').append('{:0.2f}'.format(-100 * (term_list[0] - term_list[index + 1]) / term_list[0]))
 
 
@@ -274,11 +268,13 @@ def stemming_list(information, term_dictionary, index):
         if new_term_dictionary.get(term_after_stemming) is None:
             new_term_dictionary[term_after_stemming] = term_dictionary.get(key)
         else:
-            new_term_dictionary[term_after_stemming] = merge_list(new_term_dictionary[term_after_stemming], term_dictionary.get(key))
+            new_term_dictionary[term_after_stemming] = merge_list(new_term_dictionary[term_after_stemming],
+                                                                  term_dictionary.get(key))
 
     term_list = information.get('number (distinct terms)')
     term_list.append(len(new_term_dictionary))
-    information.get('Δ %').append('{:0.2f}'.format(-100 * (term_list[index - 1] - term_list[index]) / term_list[index - 1]))
+    information.get('Δ %').append(
+        '{:0.2f}'.format(-100 * (term_list[index - 1] - term_list[index]) / term_list[index - 1]))
     information.get('T %').append('{:0.2f}'.format(-100 * (term_list[0] - term_list[index]) / term_list[0]))
     return new_term_dictionary
 
@@ -289,16 +285,16 @@ def lossy_dictionary_compression_implementation():
         term_dictionary = eval(f.read())
 
     information = {' ': ['unfiltered', 'no numbers', 'case folding', '30 stop words', '150 stop words', 'stemming'],
-            'number (distinct terms)': [len(term_dictionary)],
-            'Δ %': [' '],
-            'T %': [' '],
-            'number (non positional postings)': [],
-            'Δ % ': [' '],
-            'T % ': [' ']
-            }
+                   'number (distinct terms)': [len(term_dictionary)],
+                   'Δ %': [' '],
+                   'T %': [' '],
+                   'number (non positional postings)': [],
+                   'Δ % ': [' '],
+                   'T % ': [' ']
+                   }
 
     # remove numbers from terms
-    no_numbers(information, term_dictionary)
+    term_dictionary = no_numbers(information, term_dictionary)
     non_positional_postings(information, term_dictionary)
 
     # case folding
@@ -338,6 +334,7 @@ def lossy_dictionary_compression_implementation():
 
 
 if __name__ == '__main__':
+    print("project start:")
 
     # sub project one: naive indexer
     print("sub project 1 begin")
@@ -350,7 +347,8 @@ if __name__ == '__main__':
 
     # naive indexer step one
     naive_indexer(F)
-    print("finish sub project 1 step 1: accepts a document as a list of tokens and outputs term-documentID pairs to list F")
+    print(
+        "finish sub project 1 step 1: accepts a document as a list of tokens and outputs term-documentID pairs to list F")
 
     # naive indexer step two
     F = sorted(F, key=(lambda x: [x[0]]))
@@ -377,20 +375,6 @@ if __name__ == '__main__':
     print("sub project 3 begin")
     lossy_dictionary_compression_implementation()
     print("sub project 3 finish")
+
+    print("project finish")
     print()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
