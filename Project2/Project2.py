@@ -16,8 +16,8 @@ corpus_path = '../reuters21578'
 # result directory
 result_output_directory = 'Result/'
 
-# result files
-sub_project_one_output_file = "sub-project-1.txt"
+# result dictionary files
+sub_project_one_output_file = "dictionary.txt"
 
 # the list of punctuations in the content
 punctuations = '''=\'+!()[]{};:",<>./`?@#$%^&*_~'''
