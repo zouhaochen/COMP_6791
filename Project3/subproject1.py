@@ -4,6 +4,7 @@ import re
 import time
 
 pipeline_output_file = "posting-list.txt"
+result_output_directory = 'Result/'
 path = '../reuters21578'
 punctuations = '''=\'+!()[]{};:",<>./`?@#$%^&*_~'''
 dictionary = {}
