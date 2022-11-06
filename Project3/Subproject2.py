@@ -1,7 +1,7 @@
+import nltk
 from nltk import word_tokenize
 import math
 import os
-import re
 
 pipeline_output_file = "posting-list.txt"
 path = '../reuters21578'
@@ -24,19 +24,29 @@ def read_from_file():
 def get_L_aver(files):
     length = 0
     for file in files:
-        for document in re.findall("<REUTERS TOPICS.*?</REUTERS>", file.replace('\n', ' ')):
+        for document in nltk.regexp_tokenize(file.replace('\n', ' '), "<REUTERS TOPICS.*?</REUTERS>"):
+
+            # remove messy code
             document = document.replace("&lt", "")
+            document = document.replace("&#1;", "")
+            document = document.replace("&#2;", "")
             document = document.replace("&#3;", "")
-            title_group = re.search("<TITLE>.*?</TITLE>", document)
-            if title_group is None:
+            document = document.replace("&#5;", "")
+            document = document.replace("&#22;", "")
+            document = document.replace("&#31;", "")
+
+            title_group = nltk.regexp_tokenize(document, "<TITLE>.*?</TITLE>")
+            if len(title_group) == 0:
                 continue
-            title = title_group.group()[7: -8]
-            body_group = re.search("<BODY>.*?</BODY>", document)
-            if body_group is not None:
-                body = body_group.group()[6: -7]
+            title = title_group[0]
+
+            body_group = nltk.regexp_tokenize(document, "<BODY>.*?</BODY>")
+            if len(body_group) != 0:
+                body = body_group[0]
             else:
                 body = None
-            docID = re.search('''NEWID="[0-9]+"''', document).group()[7:-1]
+
+            docID = nltk.regexp_tokenize(document, '''NEWID="[0-9]+"''')[0][7:-1]
             if docID is None:
                 continue
             if title is not None and body is not None:
@@ -49,22 +59,34 @@ def get_L_aver(files):
 def get_ranked_document_list(files, L_aver, query, dic):
     ranked = {}
     length = 0
+
     for file in files:
-        for document in re.findall("<REUTERS TOPICS.*?</REUTERS>", file.replace('\n', ' ')):
+        for document in nltk.regexp_tokenize(file.replace('\n', ' '), "<REUTERS TOPICS.*?</REUTERS>"):
+
+            # remove messy code
             document = document.replace("&lt", "")
+            document = document.replace("&#1;", "")
+            document = document.replace("&#2;", "")
             document = document.replace("&#3;", "")
-            title_group = re.search("<TITLE>.*?</TITLE>", document)
-            if title_group is None:
+            document = document.replace("&#5;", "")
+            document = document.replace("&#22;", "")
+            document = document.replace("&#31;", "")
+
+            title_group = nltk.regexp_tokenize(document, "<TITLE>.*?</TITLE>")
+            if len(title_group) == 0:
                 continue
-            title = title_group.group()[7: -8]
-            body_group = re.search("<BODY>.*?</BODY>", document)
-            if body_group is not None:
-                body = body_group.group()[6: -7]
+            title = title_group[0]
+
+            body_group = nltk.regexp_tokenize(document, "<BODY>.*?</BODY>")
+            if len(body_group) != 0:
+                body = body_group[0]
             else:
                 body = None
-            docID = re.search('''NEWID="[0-9]+"''', document).group()[7:-1]
+
+            docID = nltk.regexp_tokenize(document, '''NEWID="[0-9]+"''')[0][7:-1]
             if docID is None:
                 continue
+
             if title is not None and body is not None:
                 tokens = word_tokenize(title + " " + body)
             else:
@@ -85,7 +107,8 @@ def get_ranked_document_list(files, L_aver, query, dic):
                 if term in tokens:
                     term_frequency = get_term_frequency(term, tokens)
                     document_frequency = len(dic.get(term))
-                    rank += math.log(N / document_frequency, 10) * (k1 + 1) * term_frequency / (k1 * ((1 - b) + b * len(tokens) / L_aver) + term_frequency)
+                    rank += math.log(N / document_frequency, 10) * (k1 + 1) * term_frequency / (
+                                k1 * ((1 - b) + b * len(tokens) / L_aver) + term_frequency)
             ranked[docID] = rank
     return ranked
 
@@ -105,11 +128,26 @@ if __name__ == '__main__':
     with open(pipeline_output_file, "r") as f:
         dic = eval(f.read())
         while True:
-            print("please input the query term: ")
-            query = input()
-            term_list = query.split(" ")
+            print("please choose your query type and option:")
+            print("1. AND query.")
+            print("2. OR query.")
+            print("3. BM25 query.")
+            print("4. Exit.")
 
-            document_list = get_ranked_document_list(read_from_file(), L_aver, term_list, dic)
-            print(sorted(document_list.items(), key = lambda kv:(kv[1], kv[0]), reverse=True))
+            choice = input()
 
+            if choice == 1:
+                print()
 
+            elif choice == 2:
+                print()
+
+            elif choice == 3:
+                print("please input the query term: ")
+                query = input()
+                term_list = query.split(" ")
+                document_list = get_ranked_document_list(read_from_file(), L_aver, term_list, dic)
+                print(sorted(document_list.items(), key=lambda kv: (kv[1], kv[0]), reverse=True))
+
+            else:
+                False
