@@ -108,7 +108,7 @@ if __name__ == '__main__':
     s_t1 = time.time()
 
     n_t0 = time.time()
-    n_index = sub1(10000)
+    sub1(10000)
     n_t1 = time.time()
 
     message = 'SPIMI took: ' + str(s_t1 - s_t0)
