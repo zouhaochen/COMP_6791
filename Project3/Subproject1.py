@@ -3,127 +3,147 @@ import json
 import time
 import nltk
 
-index = dict()
+naive_index = dict()
+spimi_index = dict()
 path = '../reuters21578'
-result_output_directory = 'Result/'
 
 
-def extract_text(body):
-    whitelist = set('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \n')
-    body = ''.join(filter(whitelist.__contains__, body))
+# extract body content text
+def body_content(body):
+    # while list for text content
+    white_list = set('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \n')
+
+    body = ''.join(filter(white_list.__contains__, body))
 
 
-def segment_documents(file):
-    doc_regex = r"<REUTERS.*?>.*?</REUTERS>"
+# segment document file content text
+def segment_document(file):
+    # regular expression
+    document_regex = r"<REUTERS.*?>.*?</REUTERS>"
     body_regex = r"<BODY>(.*?)</BODY>"
     id_regex = r'NEWID="(.*?)"'
-    document = nltk.regexp_tokenize(file, doc_regex)
 
-    for doc in document:
-        new_id = nltk.regexp_tokenize(doc, id_regex)
-        body = nltk.regexp_tokenize(doc, body_regex)
+    documents = nltk.regexp_tokenize(file, document_regex)
+
+    # extract document from corpus and attach id
+    for document in documents:
+        document_id = nltk.regexp_tokenize(document, id_regex)
+        body = nltk.regexp_tokenize(document, body_regex)
         if len(body) == 0:
             body = ""
         else:
             body = body[0]
-        extract_text(body)
+        body_content(body)
         body = body.replace('\n', ' ')
         body = body.replace('/', ' ')
         body = " ".join(body.split())
-        yield new_id, [token for token in body.split(' ')]
+        yield document_id, [token for token in body.split(' ')]
 
 
-def readMsg(path):
-    os.chdir(path)
+# read content from document files end with .sgm in the corpus
+def read_from_file(file_path):
+    os.chdir(file_path)
+
     for file_name in sorted(os.listdir(".")):
         if file_name.endswith(".sgm"):
-            f = open(file_name, 'r', encoding='utf-8', errors='ignore')
-            file_content = f.read()
-            file_num = file_name[-6:-4]
-            yield file_num, file_content
+            file = open(file_name, 'r', encoding='utf-8', errors='ignore')
+            file_content = file.read()
+            file_number = file_name[-6:-4]
+            yield file_number, file_content
 
 
-def preprocessing(F):
-    cur_num = 0
-    for file_num, file_content in readMsg(path):
-        for id, token_list in segment_documents(file_content):
+# pre process step for naive indexer: 10000 pairs
+def pre_processing(F):
+    pair_number = 0
+
+    for file_num, file_content in read_from_file(path):
+        for id_list, token_list in segment_document(file_content):
             for token in token_list:
                 if len(token) != 0:
-                    F.append((token, id[0]))
-                    cur_num += 1
-                if cur_num == 10000:
+                    F.append((token, id_list[0]))
+                    pair_number += 1
+                if pair_number == 10000:
                     return F
     return F
 
 
-def remove_dup_sort(F):
-    print('Length before remove duplicates: ', len(F))
+# remove duplicate and sort
+def remove_duplicate_and_sort(F):
+    print()
+    print('before remove duplicates in F: ', len(F), 'pairings in dictionary')
     F = list(set(F))
-    print('Length after remove duplicates: ', len(F))
+    print('finish remove duplicates in F: ', len(F), 'pairings in dictionary')
     F = sorted(F, key=lambda t: (t[0], int(t[1])))
-    print("Done sorting F")
-    # print(*F)
+    print("finish sort F")
     return F
 
 
+# inverted index
 def invert(F):
-    index.clear()
-    for term, id in F:
-        if term not in index:
-            index[term] = []
-        index[term] = index[term] + [id]
-    print(f'number of terms in index: {len(index.keys())}')
-    return index
+    naive_index.clear()
+
+    for term, document_id in F:
+        if term not in naive_index:
+            naive_index[term] = []
+        naive_index[term] = naive_index[term] + [document_id]
+    print()
+    print(f'total number of terms in index: {len(naive_index.keys())}')
+    return naive_index
 
 
-def sub1(num):
+# naive indexer implementation from previous project
+def naive_indexer(num):
     F = []
-    preprocessing(F)
-    F = remove_dup_sort(F)
+    pre_processing(F)
+    F = remove_duplicate_and_sort(F)
     invert(F)
 
 
-def SPIMI(index, pairs_num):
-    file = readMsg(path)
-    cur_num = 0
-    for num, content in file:
-        for id, token_list in segment_documents(content):
+# SPIMI implementation
+def SPIMI(index_list, pairing_number):
+    file = read_from_file(path)
+    number_count = 0
+
+    for number, content in file:
+        for id_list, token_list in segment_document(content):
             for token in token_list:
-                if token not in index:
-                    index[token] = []
+                if token not in index_list:
+                    index_list[token] = []
                 if len(token) != 0:
-                    index[token].append(id[0])
-                    cur_num += 1
-                if (pairs_num == cur_num):
-                    print(str(pairs_num) + ' processed')
+                    index_list[token].append(id_list[0])
+                    number_count += 1
+                if pairing_number == number_count:
+                    print(str(pairing_number) + ' term-docID pairings processed')
                     return
-    print(str(pairs_num) + ' processed')
+    print(str(pairing_number) + ' term-docID pairings processed')
 
 
 if __name__ == '__main__':
+    # record the result
+    result = ""
 
-    results = ""
-    s_index = dict()
-    s_t0 = time.time()
-    SPIMI(s_index, 10000)
-    s_t1 = time.time()
+    # record the time for SPIMI indexer
+    spimi_start_time = time.time()
+    SPIMI(spimi_index, 10000)
+    spimi_end_time = time.time()
 
+    # record the time for naive indexer
     n_t0 = time.time()
-    sub1(10000)
+    naive_indexer(10000)
     n_t1 = time.time()
 
-    message = 'SPIMI took: ' + str(s_t1 - s_t0)
-    print(message)
-    results += message
-    results += '\n'
+    output = 'Time for SPIMI: ' + str(spimi_end_time - spimi_start_time) + ' second.'
+    print(output)
+    result += output
+    result += '\n'
 
-    message = 'Naive took: ' + str(n_t1 - n_t0)
-    print(message)
-    results += message
-    results += '\n'
+    output = 'Time for naive indexer: ' + str(n_t1 - n_t0) + ' second.'
+    print(output)
+    result += output
+    result += '\n'
 
     f = open('../Project3/Result/subproject1.txt', 'w')
-    f.write(results)
+    f.write(result)
     f.close()
 
-    json.dump(s_index, open('../Project3/Result/index_10000.json', "w", encoding="utf−8"), indent=3)
+    json.dump(spimi_index, open('../Project3/Result/index_10000.json', "w", encoding="utf−8"), indent=3)
