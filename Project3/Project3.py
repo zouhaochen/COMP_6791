@@ -121,8 +121,8 @@ if __name__ == '__main__':
     results += message
     results += '\n'
 
-    f = open('subproject1.txt', 'w')
+    f = open('../Project3/Result/subproject1.txt', 'w')
     f.write(results)
     f.close()
 
-    json.dump(s_index, open('index_10000.json', "w", encoding="utf−8"), indent=3)
+    json.dump(s_index, open('../Project3/Result/index_10000.json', "w", encoding="utf−8"), indent=3)
