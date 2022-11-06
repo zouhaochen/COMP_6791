@@ -121,13 +121,66 @@ def get_term_frequency(term, tokens):
     return count
 
 
+def get_term_lsit(query):
+    term_list = []
+    for term in query.split(" "):
+        for character in term:
+            if character in punctuations:
+                token_list = list(term)
+                token_list.pop(term.index(character))
+                term = "".join(token_list)
+        term_list.append(term)
+    return term_list
+
+
+def get_intersection(listA, res):
+    tmp = []
+    i = 0
+    j = 0
+    if len(res) == 0:
+        return listA
+    while i < len(listA) and j < len(res):
+        if int(listA[i]) == int(res[j]):
+            tmp.append(listA[i])
+            i += 1
+            j += 1
+        elif int(listA[i]) > int(res[j]):
+            j += 1
+        else:
+            i += 1
+    return tmp
+
+
+def get_term_lsit_or(query):
+    term_list = []
+    for term in query.split(" "):
+        for character in term:
+            if character in punctuations:
+                token_list = list(term)
+                token_list.pop(term.index(character))
+                term = "".join(token_list)
+        term_list.append(term)
+    return term_list
+
+
+def get_intersection_or(listA, union_dic):
+    if listA is None:
+        return
+    for docId in listA:
+        if union_dic.get(docId) is None:
+            union_dic[docId] = 1
+        else:
+            union_dic[docId] = union_dic.get(docId) + 1
+
+
 if __name__ == '__main__':
     files = read_from_file()
     L_aver = get_L_aver(files)
 
     with open(pipeline_output_file, "r") as f:
         dic = eval(f.read())
-        while True:
+        loop = True
+        while loop:
             print("please choose your query type and option:")
             print("1. AND query.")
             print("2. OR query.")
@@ -136,13 +189,35 @@ if __name__ == '__main__':
 
             choice = input()
 
-            if choice == 1:
-                print()
+            if choice == "1":
+                with open(pipeline_output_file, "r") as f:
+                    dic = eval(f.read())
+                    while True:
+                        print("please input the query term: ")
+                        query = input()
+                        term_list = get_term_lsit(query)
+                        res = []
+                        for term in term_list:
+                            res = get_intersection(dic.get(term), res)
+                            if len(res) == 0:
+                                print("No result found")
+                                break
+                        if len(res) > 0:
+                            print(res)
 
-            elif choice == 2:
-                print()
+            elif choice == "2":
+                with open(pipeline_output_file, "r") as f:
+                    dic = eval(f.read())
+                    while True:
+                        print("please input the query term: ")
+                        query = input()
+                        term_list = get_term_lsit_or(query)
+                        union_dic = {}
+                        for term in term_list:
+                            get_intersection_or(dic.get(term), union_dic)
+                        print(sorted(union_dic.items(), key=lambda kv: (kv[1], kv[0]), reverse=True))
 
-            elif choice == 3:
+            elif choice == "3":
                 print("please input the query term: ")
                 query = input()
                 term_list = query.split(" ")
@@ -150,4 +225,4 @@ if __name__ == '__main__':
                 print(sorted(document_list.items(), key=lambda kv: (kv[1], kv[0]), reverse=True))
 
             else:
-                False
+                loop = False
