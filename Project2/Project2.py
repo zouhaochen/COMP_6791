@@ -81,14 +81,12 @@ def naive_indexer(F):
 
             # recognize document file title in tokens list
             file_title_set = nltk.regexp_tokenize(document, "<TITLE>.*?</TITLE>")
-            # file_title_set = re.search("<TITLE>.*?</TITLE>", document)
             if len(file_title_set) == 0:
                 continue
             title = file_title_set[0]
 
             # recognize document file body in tokens list
             file_body_set = nltk.regexp_tokenize(document, "<BODY>.*?</BODY>")
-            # file_body_set = re.search("<BODY>.*?</BODY>", document)
             if len(file_body_set) != 0:
                 body = file_body_set[0]
             else:
