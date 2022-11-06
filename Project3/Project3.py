@@ -101,6 +101,7 @@ def SPIMI(index, pairs_num):
 
 
 if __name__ == '__main__':
+
     results = ""
     s_index = dict()
     s_t0 = time.time()
