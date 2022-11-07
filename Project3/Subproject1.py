@@ -142,8 +142,8 @@ if __name__ == '__main__':
     result += output
     result += '\n'
 
-    f = open('../Project3/Result/subproject1.txt', 'w')
+    f = open('../Project3/Result/sub—project1.txt', 'w')
     f.write(result)
     f.close()
 
-    json.dump(spimi_index, open('../Project3/Result/index_10000.json', "w", encoding="utf−8"), indent=3)
+    json.dump(spimi_index, open('../Project3/Result/index.json', "w", encoding="utf−8"), indent=3)
