@@ -1,0 +1,2 @@
+Time for SPIMI: 0.026571989059448242 second.
+Time for naive indexer: 0.03288435935974121 second.
