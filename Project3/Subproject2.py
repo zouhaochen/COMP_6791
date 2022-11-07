@@ -143,40 +143,42 @@ def get_term_list(query):
     return term_list
 
 
-def intersection_and(listA, res):
+def intersection_and(term_list, result):
     tmp = []
     i = 0
     j = 0
-    if len(res) == 0:
-        return listA
-    while i < len(listA) and j < len(res):
-        if int(listA[i]) == int(res[j]):
-            tmp.append(listA[i])
+
+    if len(result) == 0:
+        return term_list
+    while i < len(term_list) and j < len(result):
+        if int(term_list[i]) == int(result[j]):
+            tmp.append(term_list[i])
             i += 1
             j += 1
-        elif int(listA[i]) > int(res[j]):
+        elif int(term_list[i]) > int(result[j]):
             j += 1
         else:
             i += 1
     return tmp
 
 
-def get_intersection_or(listA, union_dic):
-    if listA is None:
+def intersection_or(term_list, union_dictionary):
+    if term_list is None:
         return
-    for docId in listA:
-        if union_dic.get(docId) is None:
-            union_dic[docId] = 1
+    for document_id in term_list:
+        if union_dictionary.get(document_id) is None:
+            union_dictionary[document_id] = 1
         else:
-            union_dic[docId] = union_dic.get(docId) + 1
+            union_dictionary[document_id] = union_dictionary.get(document_id) + 1
 
 
 if __name__ == '__main__':
     files = read_from_file()
-    L_aver = average_length(files)
+    file_average_length = average_length(files)
 
     with open(pipeline_output_file, "r") as f:
-        dic = eval(f.read())
+        dictionary = eval(f.read())
+
         loop = True
         while loop:
             print("please choose your query type and option:")
@@ -189,13 +191,13 @@ if __name__ == '__main__':
 
             if choice == "1":
                 with open(pipeline_output_file, "r") as f:
-                    dic = eval(f.read())
+                    dictionary = eval(f.read())
                     print("please input the query term: ")
                     query = input()
                     term_list = get_term_list(query)
                     res = []
                     for term in term_list:
-                        res = intersection_and(dic.get(term), res)
+                        res = intersection_and(dictionary.get(term), res)
                         if len(res) == 0:
                             print("No result found")
                             break
@@ -205,13 +207,13 @@ if __name__ == '__main__':
 
             elif choice == "2":
                 with open(pipeline_output_file, "r") as f:
-                    dic = eval(f.read())
+                    dictionary = eval(f.read())
                     print("please input the query term: ")
                     query = input()
                     term_list = get_term_list(query)
                     union_dic = {}
                     for term in term_list:
-                        get_intersection_or(dic.get(term), union_dic)
+                        intersection_or(dictionary.get(term), union_dic)
                     print(sorted(union_dic.items(), key=lambda kv: (kv[1], kv[0]), reverse=True))
                 print()
 
@@ -219,7 +221,7 @@ if __name__ == '__main__':
                 print("please input the query term: ")
                 query = input()
                 term_list = query.split(" ")
-                document_list = get_ranked_document_list(read_from_file(), L_aver, term_list, dic)
+                document_list = get_ranked_document_list(read_from_file(), file_average_length, term_list, dictionary)
                 print(sorted(document_list.items(), key=lambda kv: (kv[1], kv[0]), reverse=True))
                 print()
 
