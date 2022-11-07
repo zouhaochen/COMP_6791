@@ -63,7 +63,7 @@ def average_length(corpus_files):
     return length / N
 
 
-def term_frequency(term, tokens):
+def get_term_frequency(term, tokens):
     count = 0
     for token in tokens:
         if token == term:
@@ -122,7 +122,7 @@ def get_ranked_document_list(corpus_files, length_average, search_query, diction
                         token_list.pop(term.index(character))
                         term = "".join(token_list)
                 if term in tokens:
-                    term_frequency = term_frequency(term, tokens)
+                    term_frequency = get_term_frequency(term, tokens)
                     document_frequency = len(dictionary.get(term))
                     rank += math.log(N / document_frequency, 10) * (k1 + 1) * term_frequency / (
                             k1 * ((1 - b) + b * len(tokens) / length_average) + term_frequency)
