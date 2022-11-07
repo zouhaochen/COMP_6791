@@ -192,33 +192,33 @@ if __name__ == '__main__':
             if choice == "1":
                 with open(pipeline_output_file, "r") as f:
                     dictionary = eval(f.read())
-                    print("please input the query term: ")
+                    print("please enter search query term: ")
                     query = input()
                     term_list = get_term_list(query)
-                    res = []
+                    result = []
                     for term in term_list:
-                        res = intersection_and(dictionary.get(term), res)
-                        if len(res) == 0:
-                            print("No result found")
+                        result = intersection_and(dictionary.get(term), result)
+                        if len(result) == 0:
+                            print("no result")
                             break
-                    if len(res) > 0:
-                        print(res)
+                    if len(result) > 0:
+                        print(result)
                 print()
 
             elif choice == "2":
                 with open(pipeline_output_file, "r") as f:
                     dictionary = eval(f.read())
-                    print("please input the query term: ")
+                    print("please enter search query term: ")
                     query = input()
                     term_list = get_term_list(query)
-                    union_dic = {}
+                    union_dictionary = {}
                     for term in term_list:
-                        intersection_or(dictionary.get(term), union_dic)
-                    print(sorted(union_dic.items(), key=lambda kv: (kv[1], kv[0]), reverse=True))
+                        intersection_or(dictionary.get(term), union_dictionary)
+                    print(sorted(union_dictionary.items(), key=lambda kv: (kv[1], kv[0]), reverse=True))
                 print()
 
             elif choice == "3":
-                print("please input the query term: ")
+                print("please enter search query term: ")
                 query = input()
                 term_list = query.split(" ")
                 document_list = get_ranked_document_list(read_from_file(), file_average_length, term_list, dictionary)
