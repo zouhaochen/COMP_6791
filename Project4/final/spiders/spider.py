@@ -21,7 +21,7 @@ class ConcordiaSpider(scrapy.Spider):
 
     def start_requests(self):
         urls = [
-            'https://www.concordia.ca/'
+            'https://www.concordia.ca/ginacody.html'
         ]
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
